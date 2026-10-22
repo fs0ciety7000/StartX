@@ -1,0 +1,8 @@
+**/node_modules
+web/dist
+server/dist/*
+!server/dist/.gitkeep
+.git
+design
+docs
+*.md

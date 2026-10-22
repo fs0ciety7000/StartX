@@ -1,0 +1,28 @@
+{
+  "name": "startx-web",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "StartX : startpage de navigateur, configurable, locale, sans compte.",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run check && vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "preview": "vite preview",
+    "format": "prettier --write src",
+    "lint": "prettier --check src"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tsconfig/svelte": "^5.0.8",
+    "prettier": "^3.9.10",
+    "prettier-plugin-svelte": "^4.1.1",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.7",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.5"
+  }
+}
