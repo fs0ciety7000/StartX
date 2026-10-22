@@ -161,3 +161,48 @@ func TestRateLimit(t *testing.T) {
 		t.Fatal("limiter")
 	}
 }
+
+func TestClientIP(t *testing.T) {
+	req := func(remote, xff, cf string) *http.Request {
+		r := httptest.NewRequest("GET", "/", nil)
+		r.RemoteAddr = remote
+		if xff != "" {
+			r.Header.Set("X-Forwarded-For", xff)
+		}
+		if cf != "" {
+			r.Header.Set("CF-Connecting-IP", cf)
+		}
+		return r
+	}
+	cases := []struct{ remote, xff, cf, want string }{
+		{"10.0.1.5:1234", "203.0.113.9, 162.158.1.1", "198.51.100.7", "198.51.100.7"}, // via Cloudflare + Traefik
+		{"10.0.1.5:1234", "1.2.3.4, 5.6.7.8", "9.9.9.9", "5.6.7.8"},                   // direct to origin, spoofed CF header
+		{"5.6.7.8:1234", "1.1.1.1", "9.9.9.9", "5.6.7.8"},                             // public peer: headers ignored
+	}
+	for _, c := range cases {
+		if got := clientIP(req(c.remote, c.xff, c.cf)); got != c.want {
+			t.Errorf("%+v: got %s", c, got)
+		}
+	}
+}
+
+func TestDenied(t *testing.T) {
+	defer func() { denied = nil }()
+	if err := SetDenied("152.53.176.13, 2001:db9::/48"); err != nil {
+		t.Fatal(err)
+	}
+	if publicIP(netip.MustParseAddr("152.53.176.13")) || publicIP(netip.MustParseAddr("2001:db9::1")) {
+		t.Fatal("denied address allowed")
+	}
+	if err := checkURL(context.Background(), mustURL("http://example.org:8080/"), false); err == nil {
+		t.Fatal("port 8080 should be refused")
+	}
+}
+
+func TestDuplicateItems(t *testing.T) {
+	body := `<rss><channel><title>t</title><item><title>a</title><link>https://x.org/1</link></item><item><title>a</title><link>https://x.org/1</link></item></channel></rss>`
+	f, err := parseFeed([]byte(body), nil)
+	if err != nil || len(f.Items) != 1 {
+		t.Fatalf("%v %+v", err, f)
+	}
+}

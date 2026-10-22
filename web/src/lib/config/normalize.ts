@@ -32,6 +32,14 @@ function engine(raw: unknown): SearchEngine | null {
   };
 }
 
+/** Returns `id` unless already taken (or empty), in which case a fresh one. Keys must be unique for rendering. */
+function uniq(id: string, seen: Set<string>, prefix: string): string {
+  let out = id;
+  while (!out || seen.has(out)) out = uid(prefix);
+  seen.add(out);
+  return out;
+}
+
 function widget(raw: unknown, cols: number): WidgetInstance | null {
   const o = obj(raw);
   const def = widgetDef(str(o['type']));
@@ -69,7 +77,14 @@ export function normalize(input: unknown): StartxConfig {
     .map(engine)
     .filter((e): e is SearchEngine => e !== null);
   const finalEngines = engines.length ? engines : DEFAULT_ENGINES.map((e) => ({ ...e }));
+  const ids = new Set<string>();
   const pages = arr(c['pages']).map(page);
+  for (const p of pages) {
+    p.id = uniq(p.id, ids, 'p');
+    for (const w of p.widgets) w.id = uniq(w.id, ids, 'w');
+  }
+  const engineIds = new Set<string>();
+  for (const e of engines) e.id = uniq(e.id, engineIds, 'e');
   const finalPages = pages.length ? pages : base.pages;
   const active = str(c['activePage']);
   const defaultEngine = str(s['defaultEngine']);

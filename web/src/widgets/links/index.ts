@@ -28,6 +28,7 @@ export default defineWidget<LinksConfig>({
   defaults: () => ({ accent: 'accent', layout: 'list', links: [] }),
   sanitize: (raw) => {
     const o = obj(raw);
+    const ids = new Set<string>();
     return {
       accent: oneOf(o['accent'], ACCENT_KEYS, 'accent'),
       layout: oneOf(o['layout'], ['list', 'grid'] as const, 'list'),
@@ -35,7 +36,10 @@ export default defineWidget<LinksConfig>({
         .map((x) => {
           const l = obj(x);
           const url = safeUrl(l['url']);
-          return url ? { id: str(l['id']) || uid('l'), name: str(l['name'], '', 80) || url, url, icon: safeUrl(l['icon']) } : null;
+          let id = str(l['id'], '', 40);
+          while (!id || ids.has(id)) id = uid('l');
+          ids.add(id);
+          return url ? { id, name: str(l['name'], '', 80) || url, url, icon: safeUrl(l['icon']) } : null;
         })
         .filter((l): l is Bookmark => l !== null)
         .slice(0, 200),

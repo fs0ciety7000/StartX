@@ -110,6 +110,9 @@ export function initStore(): void {
     try {
       lastSaved = e.newValue;
       app.config = normalize(JSON.parse(e.newValue));
+      // This tab's snapshots predate the other tab's change: undoing would silently drop it.
+      past.length = 0;
+      future.length = 0;
     } catch {
       /* another tab wrote garbage: keep ours */
     }
@@ -264,7 +267,11 @@ export function updateWidget(id: string, patch: Partial<Pick<WidgetInstance, 'ti
 /** Coalesce rapid edits (typing in a note) into one undo step. */
 const quiet = new Map<string, ReturnType<typeof setTimeout>>();
 export function updateWidgetQuiet(id: string, config: Record<string, unknown>): void {
-  if (!quiet.has(id)) past.push(JSON.stringify(app.config));
+  if (!quiet.has(id)) {
+    past.push(JSON.stringify(app.config));
+    if (past.length > HISTORY_MAX) past.shift();
+    future.length = 0;
+  }
   clearTimeout(quiet.get(id));
   quiet.set(
     id,

@@ -23,6 +23,13 @@ func main() {
 	slog.SetDefault(log)
 
 	addr := ":" + env("PORT", "8080")
+	if err := SetDenied(os.Getenv("STARTX_DENY_CIDRS")); err != nil {
+		log.Error("STARTX_DENY_CIDRS", "err", err)
+		os.Exit(1)
+	}
+	if os.Getenv("STARTX_USE_PROXY") == "1" {
+		log.Warn("STARTX_USE_PROXY=1: outbound address checks happen before the proxy resolves; development only")
+	}
 	fetcher := NewFetcher(FetcherOptions{UseEnvProxy: os.Getenv("STARTX_USE_PROXY") == "1"})
 
 	mux := http.NewServeMux()

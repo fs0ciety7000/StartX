@@ -55,7 +55,12 @@
           ts: it.date ? Date.parse(it.date) : 0,
         })),
       );
-    return all.sort((a, b) => b.ts - a.ts).slice(0, config.limit);
+    // One article can appear in several feeds, or twice in one: keys must stay unique.
+    const seen = new Set<string>();
+    return all
+      .filter((it) => /^https?:\/\//.test(it.link) && !seen.has(it.link) && !!seen.add(it.link))
+      .sort((a, b) => b.ts - a.ts)
+      .slice(0, config.limit);
   });
   const loading = $derived(config.feeds.some((f) => feeds[f.url]?.loading));
   const errors = $derived(config.feeds.filter((f) => feeds[f.url]?.error && !feeds[f.url]?.data));
@@ -120,7 +125,7 @@
   {/if}
 
   <ol class="items" role="list">
-    {#each items as it (it.feed + it.link + it.title)}
+    {#each items as it (it.link)}
       <li>
         <a href={it.link} target={linkTarget()} rel="noopener noreferrer">
           <span class="row-meta mono"

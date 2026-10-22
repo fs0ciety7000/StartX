@@ -28,13 +28,14 @@ L'étape Go de l'image exécute `go vet` et `go test` : un test rouge empêche l
 |---|---|
 | `PORT` | Port d'écoute (8080 par défaut, à garder aligné avec *Ports Exposes* dans Coolify) |
 | `STARTX_DEFAULT_CONFIG` | Chemin d'un export JSON monté dans le conteneur : config de premier lancement (voir [CONFIG.md](CONFIG.md)) |
+| `STARTX_DENY_CIDRS` | IP publiques du serveur (ici `152.53.176.13`), interdites au proxy RSS : sinon une URL vers l'hôte lui-même contournerait le pare-feu |
 
 ## Recréer l'installation de zéro
 
 1. **DNS** (Cloudflare, zone `fs0ciety.org`) : `CNAME startpage → fs0ciety.org`, proxy activé.
 2. **Coolify** : nouveau projet *StartX*, ressource *Private Repository (GitHub App)* → `fs0ciety7000/StartX`,
    branche suivie, build pack *Dockerfile*, *Ports Exposes* `8080`, domaine `https://startpage.fs0ciety.org`,
-   healthcheck activé sur `/healthz` port `8080`.
+   healthcheck activé sur `/healthz` port `8080`, variable `STARTX_DENY_CIDRS=152.53.176.13`.
 3. *Deploy*. Vérifier `https://startpage.fs0ciety.org/healthz`.
 
 ## Navigateur

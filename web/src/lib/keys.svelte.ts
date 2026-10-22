@@ -45,7 +45,8 @@ function prefixCommand(e: KeyboardEvent): void {
 export function onGlobalKey(e: KeyboardEvent): void {
   if (keys.prefix && !e.ctrlKey && !e.metaKey && e.key !== 'Control' && e.key !== 'Shift') return prefixCommand(e);
 
-  if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'b') {
+  // Not while typing (Ctrl+B is bold in some fields) or with a panel open.
+  if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'b' && !typing(e) && !overlayOpen()) {
     e.preventDefault();
     keys.prefix = true;
     clearTimeout(prefixTimer);

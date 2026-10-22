@@ -10,6 +10,7 @@ import (
 	"net/netip"
 	"net/url"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -44,10 +45,43 @@ func publicIP(a netip.Addr) bool {
 			return false
 		}
 	}
+	for _, p := range denied {
+		if p.Contains(a) {
+			return false
+		}
+	}
 	return true
 }
 
-var allowedPorts = map[string]bool{"": true, "80": true, "443": true, "8080": true, "8443": true}
+// Web ports only: 8080/8443 would reach admin services (Traefik's API) on the host itself.
+var allowedPorts = map[string]bool{"": true, "80": true, "443": true}
+
+// denied holds extra prefixes from STARTX_DENY_CIDRS: the host's own public addresses, which
+// are "public" yet lead back into the server (and past firewall rules that trust local traffic).
+var denied []netip.Prefix
+
+// SetDenied parses a comma-separated list of CIDRs or bare IPs.
+func SetDenied(list string) error {
+	for _, s := range strings.Split(list, ",") {
+		s = strings.TrimSpace(s)
+		if s == "" {
+			continue
+		}
+		if !strings.Contains(s, "/") {
+			a, err := netip.ParseAddr(s)
+			if err != nil {
+				return err
+			}
+			s = netip.PrefixFrom(a, a.BitLen()).String()
+		}
+		p, err := netip.ParsePrefix(s)
+		if err != nil {
+			return err
+		}
+		denied = append(denied, p.Masked())
+	}
+	return nil
+}
 
 // checkURL rejects anything but http(s) on usual ports to a host that resolves only to public addresses.
 func checkURL(ctx context.Context, u *url.URL, resolve bool) error {

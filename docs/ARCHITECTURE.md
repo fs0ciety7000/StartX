@@ -77,9 +77,10 @@ appliqué avant le premier rendu par `public/boot.js` (fichier externe : la CSP 
 | `GET /healthz` | `ok`. |
 
 ### Proxy de flux
-1. **Garde SSRF** ([fetch.go](../server/fetch.go)) : http(s) seulement, ports 80/443/8080/8443, pas d'identifiants
+1. **Garde SSRF** ([fetch.go](../server/fetch.go)) : http(s) seulement, ports 80/443, pas d'identifiants
    dans l'URL ; l'adresse IP réellement composée est vérifiée au moment du `dial` (refus du loopback, réseaux privés,
-   link-local, CGNAT, multicast, plages réservées, IPv4 mappées) : pas de contournement par DNS rebinding ni par
+   link-local, CGNAT, multicast, plages réservées, IPv4 mappées, et les adresses publiques de l'hôte listées dans
+   `STARTX_DENY_CIDRS`) : pas de contournement par DNS rebinding ni par
    redirection. 5 redirections max, 10 s, 4 Mio max.
 2. **Lecture** ([feed.go](../server/feed.go)) : RSS 2.0, RSS 1.0/RDF, Atom ; tous charsets (`x/net/html/charset`) ;
    liens relatifs résolus ; dates normalisées en RFC 3339 UTC ; résumés sans HTML, tronqués à 280 caractères ;
@@ -90,7 +91,9 @@ appliqué avant le premier rendu par `public/boot.js` (fichier externe : la CSP 
 4. **Cache** : 10 min (2 min pour une erreur), requêtes simultanées sur la même URL fusionnées, 512 entrées max.
    Côté navigateur, chaque flux est aussi mis en cache dans `localStorage` (affichage immédiat, rafraîchissement selon
    le réglage du widget).
-5. **Débit** : 120 requêtes par minute et par IP (`CF-Connecting-IP`, puis `X-Forwarded-For`).
+5. **Débit** : 120 requêtes par minute et par IP. L'IP retenue est le dernier saut `X-Forwarded-For` ajouté par
+   Traefik ; `CF-Connecting-IP` n'est cru que si ce saut est une adresse Cloudflare (sinon l'en-tête est falsifiable
+   par qui contacte l'origine directement).
 
 ### En-têtes
 CSP stricte (`script-src 'self'`, styles de fichiers + attributs `style` pour les directives Svelte, `connect-src`
@@ -102,5 +105,6 @@ limité à soi et Open-Meteo, `frame-ancestors 'none'`), HSTS, `nosniff`, `X-Fra
 |---|---|---|
 | `PORT` | `8080` | Port d'écoute |
 | `STARTX_DEFAULT_CONFIG` | — | Chemin d'un export JSON servi comme config de premier lancement |
+| `STARTX_DENY_CIDRS` | — | IP ou CIDR supplémentaires interdits au proxy, séparés par des virgules : les IP publiques du serveur |
 | `STARTX_STATIC` | — | Servir un dossier au lieu du build embarqué (développement) |
 | `STARTX_USE_PROXY` | — | `1` : sortir par `HTTPS_PROXY` (bacs à sable de dev uniquement ; la vérification IP se fait alors avant la requête) |

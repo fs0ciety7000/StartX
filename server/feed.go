@@ -115,15 +115,17 @@ func parseFeed(body []byte, base *url.URL) (*Feed, error) {
 	if f.Title == "" && base != nil {
 		f.Title = strings.TrimPrefix(base.Hostname(), "www.")
 	}
+	seen := map[string]bool{}
 	for _, it := range items {
 		link := pickLink(it.Links, base)
 		if link == "" && strings.HasPrefix(it.GUID, "http") {
 			link = resolve(base, it.GUID)
 		}
 		title := clean(it.Title, 300)
-		if link == "" || title == "" {
+		if link == "" || title == "" || seen[link] {
 			continue
 		}
+		seen[link] = true
 		summary := firstNonEmpty(it.Description, it.Summary, it.Encoded, it.Content)
 		f.Items = append(f.Items, Item{
 			Title:   title,
@@ -353,7 +355,11 @@ type feedCache struct {
 
 func (c *feedCache) get(ctx context.Context, key string, load func(context.Context) (*Feed, error)) (*Feed, error) {
 	c.mu.Lock()
-	if e, ok := c.entries[key]; ok {
+	for {
+		e, ok := c.entries[key]
+		if !ok {
+			break
+		}
 		c.mu.Unlock()
 		<-e.done
 		if time.Now().Before(e.exp) {
@@ -363,6 +369,7 @@ func (c *feedCache) get(ctx context.Context, key string, load func(context.Conte
 		if c.entries[key] == e {
 			delete(c.entries, key)
 		}
+		// Someone else may have started a fresh load meanwhile: look again.
 	}
 	if len(c.entries) >= cacheSize {
 		c.evictLocked()
@@ -371,16 +378,19 @@ func (c *feedCache) get(ctx context.Context, key string, load func(context.Conte
 	c.entries[key] = e
 	c.mu.Unlock()
 
-	// Detached from the request: a visitor closing the tab must not poison the shared entry.
-	lctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 3*fetchTimeout)
+	defer close(e.done)
+	e.exp = time.Now().Add(errTTL)
+	e.err = errors.New("lecture interrompue")
+	// Detached from the request (a closed tab must not poison the shared entry), and short
+	// enough to answer within the server's WriteTimeout.
+	lctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 20*time.Second)
 	defer cancel()
 	e.feed, e.err = load(lctx)
-	ttl := okTTL
-	if e.err != nil {
-		ttl = errTTL
+	if e.err == nil {
+		e.exp = time.Now().Add(okTTL)
+	} else {
+		e.exp = time.Now().Add(errTTL)
 	}
-	e.exp = time.Now().Add(ttl)
-	close(e.done)
 	return e.feed, e.err
 }
 

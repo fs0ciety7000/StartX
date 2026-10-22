@@ -28,12 +28,15 @@ export default defineWidget<RssConfig>({
   defaults: () => ({ feeds: [], limit: 20, summary: false, refresh: 30, accent: 'accent' }),
   sanitize: (raw) => {
     const o = obj(raw);
+    const urls = new Set<string>();
     return {
       feeds: arr(o['feeds'])
         .map((x) => {
           const f = obj(x);
           const url = safeUrl(f['url']);
-          return url ? { url, name: str(f['name'], '', 60) } : null;
+          if (!url || urls.has(url)) return null;
+          urls.add(url);
+          return { url, name: str(f['name'], '', 60) };
         })
         .filter((f): f is Feed => f !== null)
         .slice(0, 30),
