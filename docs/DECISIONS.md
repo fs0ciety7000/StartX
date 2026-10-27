@@ -53,6 +53,15 @@
 - **Raison** : rien à cacher ni à proxifier, pas de clé à gérer. DuckDuckGo plutôt que Google pour ne pas envoyer la
   liste de ses favoris à Google ; une icône personnalisée par lien reste possible.
 
-## D-008 · Alpine plutôt que distroless pour l'image
+## D-008 · Widgets de données ouvertes appelés par le navigateur
+- **Choix** : qualité de l'air (Open-Meteo Air Quality), jours fériés (Nager.Date) et Wikipédia du jour (REST de
+  `<langue>.wikipedia.org`) sont appelés directement par le navigateur ; soleil et lune sont calculés localement
+  (formules de SunCalc, BSD).
+- **Raison** : ces trois API envoient des en-têtes CORS et n'ont pas de clé : passer par le serveur n'apporterait
+  qu'une charge et un point de panne. Les réponses sont mises en cache dans `localStorage` (30 min, 7 jours, 1 h).
+  Le français n'a pas d'« article du jour » dans l'API Wikimedia : le widget montre alors image, éphémérides et plus
+  lus. Les noms de jours fériés belges (fournis en néerlandais/anglais) sont traduits dans le widget.
+
+## D-009 · Alpine plutôt que distroless pour l'image
 - **Raison** : le healthcheck de Coolify exécute `wget` dans le conteneur. L'image Docker a aussi son propre
   `HEALTHCHECK` qui appelle le binaire (`startx -healthcheck`).

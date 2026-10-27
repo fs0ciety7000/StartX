@@ -17,13 +17,15 @@ var dist embed.FS
 
 // csp: scripts and styles from the app only. Inline style *attributes* are allowed because
 // Svelte's style: directives set them; there is no inline <script> or <style>.
-// Images: any https (site favicons, custom icons). Weather is fetched from Open-Meteo by the browser.
+// Images: any https (site favicons, custom icons, Wikimedia pictures). Open-Meteo (weather, air),
+// Nager.Date (holidays) and Wikipedia (daily feed) are called by the browser: all send CORS headers.
 const csp = "default-src 'self'; " +
 	"script-src 'self'; " +
 	"style-src 'self'; style-src-attr 'unsafe-inline'; " +
 	"img-src 'self' data: https:; " +
 	"font-src 'self'; " +
-	"connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com; " +
+	"connect-src 'self' https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com " +
+	"https://date.nager.at https://*.wikipedia.org; " +
 	"base-uri 'self'; form-action 'none'; object-src 'none'; frame-ancestors 'none'"
 
 func securityHeaders(next http.Handler) http.Handler {

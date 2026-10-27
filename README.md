@@ -18,6 +18,10 @@ Conçu et développé par Nicolas Dessenius · Cardor Interactive. Design dériv
 | **Recherche** | Moteurs configurables (Google, DuckDuckGo, Claude, GitHub, YouTube, Wikipédia, MDN, Maps…), `!bang` pour changer de moteur une fois. |
 | **RSS** | Plusieurs sites fusionnés et triés par date, filtre par source. L'adresse du site suffit (`numerama.com`) : le serveur trouve le flux. |
 | **Météo** | Open-Meteo, sans clé : actuel + prévisions, recherche de ville. |
+| **Air et pollens** | Indice européen de qualité de l'air, PM2.5, PM10, ozone, NO₂, pollens, évolution sur 24 h (Open-Meteo). |
+| **Soleil et lune** | Lever, coucher, durée du jour et son évolution, aube et crépuscule, phase de la lune : calculés localement. |
+| **Jours fériés** | Prochains jours fériés (Belgique par défaut, 14 pays), compte à rebours (Nager.Date). |
+| **Wikipédia du jour** | Image du jour, éphémérides, articles les plus lus, article du jour selon la langue. |
 | **Pages** | Autant de pages que voulu, barre du bas façon tmux (`1:home* 2:code`), `Alt+1…9` ou `Ctrl+B` puis un chiffre. |
 | **Édition** | `e` : glisser-déposer (y compris vers un autre onglet de page), redimensionner, renommer, `Ctrl+Z` illimité ou presque. |
 | **Données** | Export / import JSON, éditeur JSON brut, réinitialisation. Configuration par défaut fournie par le serveur si voulu. |

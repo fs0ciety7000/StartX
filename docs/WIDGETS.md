@@ -115,9 +115,13 @@ C'est tout : `npm run dev`, mode édition (`e`), « Widget », le compte à rebo
 - **Effets** : un `$effect` qui lit et écrit le même état boucle. Pour charger des données, lire les dépendances
   voulues puis appeler le chargement dans `untrack()` (voir `widgets/rss/Rss.svelte`), et retourner une fonction de
   nettoyage pour les `setInterval`.
-- **Réseau** : le navigateur n'a le droit qu'à `'self'` et Open-Meteo (CSP dans `server/static.go`). Une source
+- **Réseau** : le navigateur n'a le droit qu'à `'self'`, Open-Meteo, Nager.Date et Wikipédia (`connect-src` de la
+  CSP dans `server/static.go`). Une source
   externe sans CORS passe par une route du serveur Go (sur le modèle de `/api/feed`, avec la garde SSRF), une source
   avec CORS s'ajoute à `connect-src`.
+- **Lieu** : un widget lié à une ville étend `Place` et réutilise `sanitizePlace()` et `<PlacePicker>`
+  (`lib/geo.ts`, `components/PlacePicker.svelte`), comme `weather`, `air` et `sun`. `readCache`/`writeCache` du même
+  module donnent un cache `localStorage` horodaté.
 - **Pas de HTML injecté** : afficher du texte (`{valeur}`), jamais `{@html}` avec des données externes.
 - **Changer la forme d'une config existante** : garder `sanitize` capable de lire l'ancienne forme, ou ajouter une
   migration dans `lib/config/normalize.ts` et incrémenter `CONFIG_VERSION`.

@@ -46,6 +46,10 @@ libres mais uniques ; absents, ils sont générés.
 | `weather` | `city`, `country`, `lat`, `lon`, `units` (`metric` \| `imperial`), `days` (0–7) |
 | `clock` | `greeting`, `date`, `seconds` (bool) |
 | `notes` | `text` |
+| `sun` | `city`, `country`, `lat`, `lon`, `moon` (bool) |
+| `air` | `city`, `country`, `lat`, `lon`, `pollen`, `forecast` (bool) |
+| `holidays` | `country` (`BE`, `FR`, `LU`, `NL`, `DE`, `CH`, `ES`, `IT`, `PT`, `GB`, `IE`, `AT`, `US`, `CA`), `count` (1–15), `bank` (bool : jours bancaires) |
+| `wiki` | `lang` (`fr`, `en`, `nl`, `de`, `es`, `it`), `image`, `onthisday`, `mostread` (bool), `count` (3–20) |
 
 Seules les adresses `http://` et `https://` sont acceptées (liens, icônes, flux, moteurs) ; une URL de moteur doit
 contenir `{q}`.

@@ -65,28 +65,6 @@ export async function fetchWeather(c: WeatherConfig, force = false): Promise<Wea
   return data;
 }
 
-export interface Place {
-  name: string;
-  country: string;
-  admin: string;
-  lat: number;
-  lon: number;
-}
-
-export async function geocode(q: string): Promise<Place[]> {
-  const p = new URLSearchParams({ name: q, count: '6', language: 'fr', format: 'json' });
-  const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?${p}`);
-  if (!res.ok) throw new Error(`Géocodage ${res.status}`);
-  const j = await res.json();
-  return ((j.results ?? []) as Record<string, any>[]).map((r) => ({
-    name: r['name'],
-    country: r['country'] ?? '',
-    admin: r['admin1'] ?? '',
-    lat: r['latitude'],
-    lon: r['longitude'],
-  }));
-}
-
 export type Sky = 'clear' | 'partly' | 'cloud' | 'fog' | 'drizzle' | 'rain' | 'snow' | 'storm';
 
 /** WMO weather interpretation codes → French label and icon family. */

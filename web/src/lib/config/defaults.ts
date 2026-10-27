@@ -1,3 +1,4 @@
+import { MONS } from '../geo.ts';
 import { CONFIG_VERSION, uid, type SearchEngine, type StartxConfig, type WidgetInstance } from './schema.ts';
 
 export const DEFAULT_ENGINES: SearchEngine[] = [
@@ -100,6 +101,17 @@ export function defaultConfig(): StartxConfig {
           w('notes', 'Notes', [1, 3], {
             text: 'Bienvenue sur StartX.\n\n— e : mode édition\n— , : réglages\n— / : recherche\n— ? : raccourcis',
           }),
+        ],
+      },
+      {
+        id: uid('p'),
+        name: 'jour',
+        columns: 4,
+        widgets: [
+          w('sun', 'Soleil et lune', [2, 2], { ...MONS, moon: true }),
+          w('air', 'Qualité de l’air', [2, 3], { ...MONS, pollen: true, forecast: true }),
+          w('holidays', 'Jours fériés', [2, 3], { country: 'BE', count: 6, bank: false }),
+          w('wiki', 'Wikipédia du jour', [2, 4], { lang: 'fr', image: true, onthisday: true, mostread: true, count: 10 }),
         ],
       },
       {

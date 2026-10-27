@@ -11,7 +11,8 @@
 │  composants ◄──── PageGrid → WidgetFrame ────┼───────►│ GET /api/feed?url=…          │
 │                        → widgets/<type>      │        │   SSRF guard → fetch → parse │
 │                                              │        │   → découverte → cache 10 min│
-│  Open-Meteo (météo), DuckDuckGo (favicons) ◄─┘        └──────────────────────────────┘
+│  Open-Meteo (météo, air), Nager.Date,       │
+│  Wikipédia, DuckDuckGo (favicons)        ◄───┘        └──────────────────────────────┘
 ```
 
 ## Interface (`web/`)
